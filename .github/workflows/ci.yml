@@ -1,5 +1,5 @@
 name: WebX CI/CD
-  
+
 on:
   push:
     branches: ["main"]
