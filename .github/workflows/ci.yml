@@ -69,6 +69,11 @@ jobs:
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
         run: |
           set -euo pipefail
+          IFS=$'\n\t'
+
+          DEPLOY_HOST="$(printf "%s" "${DEPLOY_HOST:-}" | tr -d '\r')"
+          DEPLOY_USER="$(printf "%s" "${DEPLOY_USER:-}" | tr -d '\r')"
+          DEPLOY_PATH="$(printf "%s" "${DEPLOY_PATH:-}" | tr -d '\r')"
 
           : "${DEPLOY_HOST:?DEPLOY_HOST is required}"
           : "${DEPLOY_USER:?DEPLOY_USER is required}"
@@ -84,9 +89,10 @@ jobs:
           PORT="${DEPLOY_PORT:-22}"
 
           mkdir -p ~/.ssh
-          printf "%s" "$DEPLOY_KEY" > ~/.ssh/id_rsa
+          printf "%s" "$DEPLOY_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
+          echo "Deploying to $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH_CLEAN"
           ssh-keyscan -p "$PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts
           ssh -i ~/.ssh/id_rsa -p "$PORT" "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_PATH_CLEAN'"
 
